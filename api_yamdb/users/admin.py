@@ -8,7 +8,6 @@ class UserAdmin(admin.ModelAdmin):
         'pk',
         'username',
         'first_name',
-        'last_name',
         'email',
         'bio',
         'role'
