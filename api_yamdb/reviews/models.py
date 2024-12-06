@@ -13,6 +13,14 @@ class Title(models.Model):
     pass
 
 
+class Category(models.Model):
+    pass
+
+
+class Genre(models.Model):
+    pass
+
+
 class BaseReviewCommentModel(models.Model):
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
