@@ -106,8 +106,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-MAX_SLICE = 20
-
 PER_PAGE = 10
 
 STATIC_URL = '/static/'

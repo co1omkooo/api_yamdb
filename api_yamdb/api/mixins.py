@@ -1,4 +1,4 @@
-from api.permissions import IsAdminOrReadOnly
+from api.permissions import IsAdminOrStaff
 from rest_framework import filters, mixins, viewsets
 
 
@@ -13,7 +13,7 @@ class CRUDMixin(
     Обрабатывает адреса с динамической переменной slug.
     """
 
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrStaff,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'

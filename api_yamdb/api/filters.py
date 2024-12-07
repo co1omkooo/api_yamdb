@@ -1,22 +1,22 @@
-import rest_framework as filters
+from django_filters import FilterSet, CharFilter
 
 from reviews.models import Title
 
 
-class TitleFilter(filters.FilterSet):
+class TitleFilter(FilterSet):
     """
     Фильтр произведений по полям.
     """
 
-    name = filters.CharFilter(
+    name = CharFilter(
         field_name='name',
         lookup_expr='contains',
     )
-    category = filters.CharFilter(
+    category = CharFilter(
         field_name='category__slug',
         lookup_expr='icontains',
     )
-    genre = filters.CharFilter(
+    genre = CharFilter(
         field_name='genre__slug',
         lookup_expr='icontains',
     )

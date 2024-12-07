@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
-from reviews.models import Category, Title, Genre
+from api.permissions import IsAdminOrStaff
+from reviews.models import Category, Title, Genre, Review, Comment
 from reviews.validators import validate_year
+from users.models import User
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -74,11 +76,6 @@ class TitleSerializer(serializers.ModelSerializer):
     def validating_year(self, value):
         return validate_year(value)
 
-from rest_framework import serializers
-
-
-from reviews.models import Review, Comment
-
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор данных модели отзывов."""
@@ -117,11 +114,6 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date',)
-
-from rest_framework import serializers
-
-from api.permissions import IsAdminOrStaff
-from users.models import User
 
 
 class SignUpSerializer(serializers.ModelSerializer):

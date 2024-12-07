@@ -3,6 +3,12 @@ from django.db import models
 
 from .utils import BaseTemplateClass, NameModel
 from .validators import validate_year
+from .constants import (
+    CHAR_LIMIT,
+    MAX_SCORE,
+    MIN_SCORE
+)
+from users.models import User
 
 
 class Category(BaseTemplateClass):
@@ -60,24 +66,6 @@ class Title(NameModel):
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
         ordering = ('-year', 'name')
-from .constants import (
-    CHAR_LIMIT,
-    MAX_SCORE,
-    MIN_SCORE
-)
-from users.models import User
-
-
-class Title(models.Model):
-    pass
-
-
-class Category(models.Model):
-    pass
-
-
-class Genre(models.Model):
-    pass
 
 
 class BaseReviewCommentModel(models.Model):
@@ -85,7 +73,6 @@ class BaseReviewCommentModel(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='reviews',
         verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
@@ -95,7 +82,7 @@ class BaseReviewCommentModel(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ('-pub_date')
+        ordering = ['-pub_date']
 
     def __str__(self):
         return self.text[:CHAR_LIMIT]
@@ -105,7 +92,6 @@ class Review(BaseReviewCommentModel):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews',
         verbose_name='Произведние'
     )
     score = models.IntegerField(
