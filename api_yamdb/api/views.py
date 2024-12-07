@@ -72,6 +72,7 @@ from users.token import get_tokens_for_user
 @api_view(('POST',))
 @permission_classes((AllowAny,))
 def signup(request):
+    """Регистрация нового пользователя."""
     username = request.data.get('username')
     if User.objects.filter(username=username).exists():
         user = get_object_or_404(User, username=username)
@@ -105,6 +106,7 @@ def signup(request):
 @api_view(('POST',))
 @permission_classes((AllowAny,))
 def get_token(request):
+    """Получение токена доступа."""
     serializer = AuthTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(User, username=request.data['username'])
@@ -115,6 +117,7 @@ def get_token(request):
 
 
 class UsersViewSet(viewsets.ModelViewSet):
+    """Управление данными пользователя."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminOrStaff,)
