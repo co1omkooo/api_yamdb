@@ -8,6 +8,7 @@ from users.models import User
 
 
 def send_confirmation_code_to_email(username):
+    """Отправление письма с кодом авторизации."""
     user = get_object_or_404(User, username=username)
     confirmation_code = int(
         ''.join([str(random.randrange(0, 10))

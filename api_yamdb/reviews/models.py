@@ -13,7 +13,7 @@ from users.models import User
 
 class Category(BaseTemplateClass):
     """
-    Класс категорий.
+    Модель категорий.
     """
 
     class Meta(BaseTemplateClass.Meta):
@@ -23,7 +23,7 @@ class Category(BaseTemplateClass):
 
 class Genre(BaseTemplateClass):
     """
-    Класс жанров.
+    Модель жанров.
     """
 
     class Meta(BaseTemplateClass.Meta):
@@ -33,7 +33,7 @@ class Genre(BaseTemplateClass):
 
 class Title(NameModel):
     """
-    Класс произведений.
+    Модель произведений.
 
     Модель, описывающий произведение, год выпуска, категорию и жанр.
     Связи модели:
@@ -69,6 +69,12 @@ class Title(NameModel):
 
 
 class BaseReviewCommentModel(models.Model):
+    '''
+    Модель отзывов.
+
+    Модель, описывающая отзыв, автора и его дату.
+    Связи модели:
+        author - one to many.'''
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
         User,
@@ -89,6 +95,7 @@ class BaseReviewCommentModel(models.Model):
 
 
 class Review(BaseReviewCommentModel):
+    '''Модель оценки.'''
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -119,6 +126,14 @@ class Review(BaseReviewCommentModel):
 
 
 class Comment(BaseReviewCommentModel):
+    '''
+    Модель комментария.
+
+    Модель, описыващая, комментарий и отзыв.
+
+    Связи:
+        review - one to many.
+    '''
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,

@@ -3,7 +3,6 @@ from django.db import models
 from django.forms import Textarea
 
 from reviews.models import Category, Genre, Title, Review, Comment
-# from reviews.utils import AdminManager
 
 
 @admin.register(Title)
@@ -63,14 +62,34 @@ class GenreAdmin(admin.ModelAdmin):
     list_display_links = (
         'name',
     )
-# @admin.register(Genre)
-# class GenreAdmin(AdminManager):
-#     ...
 
 
-# @admin.register(Category)
-# class CategoryAdmin(AdminManager):
-#     ...
+@admin.register(Genre)
+class GenreAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name')
+    search_fields = ('name',)
+    formfield_overrides = {
+        models.TextField: {
+            'widget': Textarea(attrs={'rows': 2, 'cols': 22}),
+        },
+    }
+
+    class Meta:
+        abstract = True
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name')
+    search_fields = ('name',)
+    formfield_overrides = {
+        models.TextField: {
+            'widget': Textarea(attrs={'rows': 2, 'cols': 22}),
+        },
+    }
+
+    class Meta:
+        abstract = True
 
 
 @admin.register(Review)

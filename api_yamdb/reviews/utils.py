@@ -1,21 +1,7 @@
-# from django.contrib import admin
 from django.db import models
 # from django.forms import Textarea
 
 from reviews.constants import MAX_LENGTH, CHAR_LIMIT
-
-
-# class AdminManager(admin.ModelAdmin):
-#     list_display = ('pk', 'name')
-#     search_fields = ('name',)
-#     formfield_overrides = {
-#         models.TextField: {
-#             'widget': Textarea(attrs={'rows': 2, 'cols': 22}),
-#         },
-#     }
-
-#     class Meta:
-#         abstract = True
 
 
 class NameModel(models.Model):
