@@ -7,6 +7,8 @@ from reviews.models import Category, Genre, Title, Review, Comment
 
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
+    """Админ панель произведений."""
+
     list_display = ('pk', 'name', 'category', 'genre_list')
     list_display_links = ('name',)
     list_editable = ('category',)
@@ -21,75 +23,31 @@ class TitleAdmin(admin.ModelAdmin):
 
     def genre_list(self, obj):
         return ', '.join(genre.slug for genre in obj.genre.all())
-    # genre_list.short_description = 'Список жанров'
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     """Админ панель категорий."""
 
-    list_display = (
-        'name',
-        'slug',
-    )
-    search_fields = (
-        'name',
-        'slug',
-    )
-    list_filter = (
-        'name',
-    )
-    list_display_links = (
-        'name',
-    )
+    list_display = ('name', 'slug',)
+    search_fields = ('name', 'slug',)
+    list_filter = ('name',)
+    list_display_links = ('name',)
 
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
     """Админ панель жанров."""
 
-    list_display = (
-        'name',
-        'slug',
-    )
-    search_fields = (
-        'name',
-        'slug',
-    )
-    list_filter = (
-        'name',
-    )
-    list_display_links = (
-        'name',
-    )
-
-
-@admin.register(Genre)
-class GenreAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name')
-    search_fields = ('name',)
+    list_display = ('name', 'slug',)
+    search_fields = ('name', 'slug',)
+    list_filter = ('name',)
+    list_display_links = ('name',)
     formfield_overrides = {
         models.TextField: {
-            'widget': Textarea(attrs={'rows': 2, 'cols': 22}),
+            'widget': Textarea(attrs={'rows': 2, 'cols': 22})
         },
     }
-
-    class Meta:
-        abstract = True
-
-
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name')
-    search_fields = ('name',)
-    formfield_overrides = {
-        models.TextField: {
-            'widget': Textarea(attrs={'rows': 2, 'cols': 22}),
-        },
-    }
-
-    class Meta:
-        abstract = True
 
 
 @admin.register(Review)
@@ -122,10 +80,5 @@ class CommentAdmin(admin.ModelAdmin):
         'author',
         'pub_date',
     )
-    search_fields = (
-        'review',
-    )
-    list_filter = (
-        'review',
-        'author',
-    )
+    search_fields = ('review',)
+    list_filter = ('review', 'author',)

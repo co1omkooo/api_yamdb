@@ -1,14 +1,12 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from .utils import BaseTemplateClass, NameModel
+from .utils import BaseTemplateClass, NameModel, BaseReviewCommentModel
 from .validators import validate_year
 from .constants import (
-    CHAR_LIMIT,
-    MAX_SCORE,
-    MIN_SCORE
+    MAX_VALUE,
+    MIN_VALUE
 )
-from users.models import User
 
 
 class Category(BaseTemplateClass):
@@ -68,46 +66,21 @@ class Title(NameModel):
         ordering = ('-year', 'name')
 
 
-class BaseReviewCommentModel(models.Model):
-    '''
-    Модель отзывов.
-
-    Модель, описывающая отзыв, автора и его дату.
-    Связи модели:
-        author - one to many.'''
-    text = models.TextField(verbose_name='Текст отзыва')
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name='Автор'
-    )
-    pub_date = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата добавления'
-    )
-
-    class Meta:
-        abstract = True
-        ordering = ['-pub_date']
-
-    def __str__(self):
-        return self.text[:CHAR_LIMIT]
-
-
 class Review(BaseReviewCommentModel):
-    '''Модель оценки.'''
+    """Модель оценки."""
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
+        db_index=True,
         verbose_name='Произведние'
     )
     score = models.IntegerField(
         validators=[
             MinValueValidator(
-                MIN_SCORE, f'Оценка не может быть меньше {MIN_SCORE}'
+                MIN_VALUE, f'Оценка не может быть меньше {MIN_VALUE}'
             ),
             MaxValueValidator(
-                MAX_SCORE, f'Оценка не может быть больше {MAX_SCORE}'
+                MAX_VALUE, f'Оценка не может быть больше {MAX_VALUE}'
             )
         ],
         verbose_name='Оценка'
@@ -126,14 +99,14 @@ class Review(BaseReviewCommentModel):
 
 
 class Comment(BaseReviewCommentModel):
-    '''
+    """
     Модель комментария.
 
     Модель, описыващая, комментарий и отзыв.
 
     Связи:
         review - one to many.
-    '''
+    """
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,

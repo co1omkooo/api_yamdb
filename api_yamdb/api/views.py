@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db.models import Avg
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -10,24 +10,26 @@ from rest_framework.response import Response
 from api.filters import TitleFilter
 from api.mixins import CRUDMixin
 from api.permissions import (
+    IsAdminModeratorAuthorOrReadOnly,
     IsAdminOrStaff,
-    IsAdminModeratorAuthorOrReadOnly
+    IsAdminUserOrReadOnly
 )
-from api.serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    TitleSafeSerializer,
-    TitleSerializer,
-    AuthTokenSerializer,
-    SignUpSerializer,
-    UserSerializer,
-    ReviewSerializer,
-    CommentSerializer
-)
-from api.utils import send_confirmation_code_to_email
 from reviews.models import Category, Genre, Title, Review
 from users.models import User
 from users.token import get_tokens_for_user
+
+from .serializers import (
+    AuthTokenSerializer,
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    SignUpSerializer,
+    TitleSafeSerializer,
+    TitleSerializer,
+    UserSerializer
+)
+from .utils import send_confirmation_code_to_email
 
 
 @api_view(('POST',))
@@ -78,9 +80,7 @@ def get_token(request):
 
 
 class CategoryViewSet(CRUDMixin):
-    """
-    Вьюсет для отображения категории, ее удаления и чтения.
-    """
+    """Вьюсет для отображения категории, ее удаления и чтения."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -94,10 +94,11 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).order_by('-year', 'name')
-    permission_classes = (IsAdminOrStaff,)
+    ).all()
+    permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -106,10 +107,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class GenreViewSet(CRUDMixin):
-    """
-    Вьюсет для создания, удаления жанра и отображения списка.
-    """
-
+    """Вьюсет для создания, удаления жанра и отображения списка."""
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
@@ -143,7 +141,10 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_review(self):
         """Получаем отзыв для комментария."""
-        return get_object_or_404(Review, pk=self.kwargs['review_id'])
+        return get_object_or_404(
+            Review,
+            pk=self.kwargs.get('review_id'),
+        )
 
     def get_queryset(self):
         """Получаем комментарии к конкретному отзыву."""

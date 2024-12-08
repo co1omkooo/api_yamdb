@@ -1,4 +1,4 @@
-from api.permissions import IsAdminOrStaff
+from api.permissions import IsAdminUserOrReadOnly
 from rest_framework import filters, mixins, viewsets
 
 
@@ -8,12 +8,9 @@ class CRUDMixin(
     mixins.ListModelMixin,
     viewsets.GenericViewSet
 ):
-    """
-    Вьюсет, позволяющий осуществлять GET, POST и DELETE запросы.
-    Обрабатывает адреса с динамической переменной slug.
-    """
+    """Вьюсет, разрешающий задавать GET, POST и DELETE запросы."""
 
-    permission_classes = (IsAdminOrStaff,)
+    permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'

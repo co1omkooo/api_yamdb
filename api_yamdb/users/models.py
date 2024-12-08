@@ -3,10 +3,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 from api_yamdb.settings import CONFIRMATION_LENGTH
+from .constatns import MAX_LENGTH_ROLE, MAX_LENGTH
 
 
 class CustomUser(AbstractUser):
-    """Модель пользователя"""
+    """Модель пользователя."""
     USER = 'user'
     MODERATOR = 'moderator'
     ADMIN = 'admin'
@@ -17,13 +18,13 @@ class CustomUser(AbstractUser):
         (ADMIN, 'Админ'),
     )
     role = models.CharField(
-        max_length=16,
+        max_length=MAX_LENGTH_ROLE,
         choices=CHOICES,
         default='user',
     )
 
     bio = models.TextField(
-        max_length=300,
+        max_length=MAX_LENGTH,
         blank=True,
     )
 

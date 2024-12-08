@@ -1,12 +1,10 @@
-from django_filters import FilterSet, CharFilter
+from django_filters import CharFilter, FilterSet
 
 from reviews.models import Title
 
 
 class TitleFilter(FilterSet):
-    """
-    Фильтр произведений по полям.
-    """
+    """Фильтр произведений."""
 
     name = CharFilter(
         field_name='name',

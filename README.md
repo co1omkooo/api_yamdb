@@ -167,6 +167,7 @@ POST /api/v1/titles/
   ],
   "category": "string"
 }
+```
 
 ### Работа с пользователями:
 

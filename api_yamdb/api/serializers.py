@@ -1,15 +1,14 @@
 from rest_framework import serializers
 
-from api.permissions import IsAdminOrStaff
 from reviews.models import Category, Title, Genre, Review, Comment
 from reviews.validators import validate_year
 from users.models import User
 
+from .permissions import IsAdminOrStaff
+
 
 class GenreSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор жанров.
-    """
+    """Сериализатор жанров."""
 
     class Meta:
         model = Genre
@@ -18,9 +17,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """
-    Сериализатор категорий.
-    """
+    """Сериализатор категорий."""
 
     class Meta:
         model = Category
@@ -29,9 +26,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitleSafeSerializer(serializers.ModelSerializer):
-    """
-    Класс-сериализатор для безопасных запросов.
-    """
+    """Сериализатор для безопасных запросов к произведениям."""
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
@@ -43,9 +38,7 @@ class TitleSafeSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор произведений для POST, PATCH и DELETE-запросов.
-    """
+    """Сериализатор произведений для POST, PATCH и DELETE-запросов."""
 
     genre = serializers.SlugRelatedField(
         slug_field='slug',
@@ -61,6 +54,7 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = (
+            'id',
             'name',
             'year',
             'description',
@@ -88,9 +82,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date',)
+        fields = ('id', 'text', 'author', 'score', 'pub_date', )
 
     def validate(self, data):
+        """Валидация, запрещающая создать существующий отзыв."""
         request = self.context['request']
         title = self.context['view'].kwargs['title_id']
         if request.method == 'POST':
@@ -99,6 +94,7 @@ class ReviewSerializer(serializers.ModelSerializer):
                     title=title
             ).exists():
                 raise serializers.ValidationError('Отзыв уже существует!')
+        print(data)
         return data
 
 
@@ -117,12 +113,16 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+    """Серилизатор для входа."""
+
     class Meta:
         model = User
         fields = ('email', 'username')
 
 
 class AuthTokenSerializer(serializers.Serializer):
+    """Сериализатор токена и имени пользователя."""
+
     username = serializers.RegexField(
         regex=r'^[\w.@+-]+$',
         max_length=150,
@@ -135,6 +135,8 @@ class AuthTokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор пользователя."""
+
     permission_classes = (IsAdminOrStaff,)
 
     class Meta:
