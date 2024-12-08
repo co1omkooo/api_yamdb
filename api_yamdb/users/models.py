@@ -8,6 +8,7 @@ from .constatns import MAX_LENGTH_ROLE, MAX_LENGTH
 
 class CustomUser(AbstractUser):
     """Модель пользователя."""
+
     USER = 'user'
     MODERATOR = 'moderator'
     ADMIN = 'admin'

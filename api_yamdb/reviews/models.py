@@ -10,9 +10,7 @@ from .constants import (
 
 
 class Category(BaseTemplateClass):
-    """
-    Модель категорий.
-    """
+    """Модель категорий."""
 
     class Meta(BaseTemplateClass.Meta):
         verbose_name = 'Категория'
@@ -20,9 +18,7 @@ class Category(BaseTemplateClass):
 
 
 class Genre(BaseTemplateClass):
-    """
-    Модель жанров.
-    """
+    """Модель жанров."""
 
     class Meta(BaseTemplateClass.Meta):
         verbose_name = 'Жанр'
@@ -68,6 +64,7 @@ class Title(NameModel):
 
 class Review(BaseReviewCommentModel):
     """Модель оценки."""
+
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -107,6 +104,7 @@ class Comment(BaseReviewCommentModel):
     Связи:
         review - one to many.
     """
+
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,

@@ -42,6 +42,7 @@ class BaseReviewCommentModel(models.Model):
     Связи модели:
         author - one to many.
     """
+
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
         User,

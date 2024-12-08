@@ -89,6 +89,7 @@ class CategoryViewSet(CRUDMixin):
 class TitleViewSet(viewsets.ModelViewSet):
     """
     Вьюсет для отображение произведени(я/ий).
+
     А также для их редактирования, чтения и удаления.
     """
 
@@ -108,6 +109,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class GenreViewSet(CRUDMixin):
     """Вьюсет для создания, удаления жанра и отображения списка."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
@@ -157,6 +159,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class UsersViewSet(viewsets.ModelViewSet):
     """Управление данными пользователя."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdminOrStaff,)
