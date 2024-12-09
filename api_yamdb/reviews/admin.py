@@ -2,7 +2,19 @@ from django.contrib import admin
 from django.db import models
 from django.forms import Textarea
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Genre, Title, Review, Comment, User
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'username',
+        'first_name',
+        'email',
+        'bio',
+        'role'
+    )
 
 
 @admin.register(Title)

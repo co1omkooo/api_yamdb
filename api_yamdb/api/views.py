@@ -2,21 +2,19 @@ from django.conf import settings
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, status, viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from api.filters import TitleFilter
-from api.mixins import CRUDMixin
 from api.permissions import (
     IsAdminModeratorAuthorOrReadOnly,
-    IsAdminOrStaff,
+    IsAdmin,
     IsAdminUserOrReadOnly
 )
-from reviews.models import Category, Genre, Title, Review
-from users.models import User
-from users.token import get_tokens_for_user
+from reviews.models import Category, Genre, Title, Review, User
+from reviews.token import get_tokens_for_user
 
 from .serializers import (
     AuthTokenSerializer,
@@ -30,6 +28,20 @@ from .serializers import (
     UserSerializer
 )
 from .utils import send_confirmation_code_to_email
+
+
+class CategoryGenreViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    """Вьюсет, разрешающий задавать GET, POST и DELETE запросы."""
+
+    permission_classes = (IsAdminUserOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 @api_view(('POST',))
@@ -79,13 +91,6 @@ def get_token(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CategoryViewSet(CRUDMixin):
-    """Вьюсет для отображения категории, ее удаления и чтения."""
-
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
 class TitleViewSet(viewsets.ModelViewSet):
     """
     Вьюсет для отображение произведени(я/ий).
@@ -107,7 +112,14 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializer
 
 
-class GenreViewSet(CRUDMixin):
+class CategoryViewSet(CategoryGenreViewSet):
+    """Вьюсет для отображения категории, ее удаления и чтения."""
+
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class GenreViewSet(CategoryGenreViewSet):
     """Вьюсет для создания, удаления жанра и отображения списка."""
 
     queryset = Genre.objects.all()
@@ -145,7 +157,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         """Получаем отзыв для комментария."""
         return get_object_or_404(
             Review,
-            pk=self.kwargs.get('review_id'),
+            pk=self.kwargs['review_id'],
         )
 
     def get_queryset(self):
@@ -162,7 +174,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdminOrStaff,)
+    permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=username',)
     lookup_field = 'username'
@@ -181,5 +193,6 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save(role=request.user.role)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            UserSerializer(request.user).data, status=status.HTTP_200_OK
+        )

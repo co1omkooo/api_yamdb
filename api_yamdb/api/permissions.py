@@ -1,14 +1,11 @@
 from rest_framework import permissions
 
 
-class IsAdminOrStaff(permissions.BasePermission):
+class IsAdmin(permissions.BasePermission):
     """Разрешение для администратора или пользователя с ролью персонала."""
 
     def has_permission(self, request, view):
-        return (
-            request.user.is_staff
-            or (request.user.is_authenticated and request.user.is_admin())
-        )
+        return request.user.is_authenticated and request.user.is_admin()
 
 
 class IsAdminUserOrReadOnly(permissions.BasePermission):
@@ -17,8 +14,14 @@ class IsAdminUserOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
-            or (request.user.is_authenticated and request.user.is_admin())
+            or (IsAdmin.has_permission(self, request, view))
         )
+
+    # def has_object_permission(self, request, view, obj):
+    #     return (
+    #         request.method in permissions.SAFE_METHODS
+    #         or (IsAdmin.has_permission(self, request, view))
+    #     )
 
 
 class IsAdminModeratorAuthorOrReadOnly(permissions.BasePermission):

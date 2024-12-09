@@ -1,10 +1,11 @@
+from django.db import IntegrityError
 from rest_framework import serializers
 
-from reviews.models import Category, Title, Genre, Review, Comment
-from reviews.validators import validate_year
-from users.models import User
+from reviews.models import Category, Title, Genre, Review, Comment, User
+from reviews.constants import USERNAME_LENGTH, USER, EMAIL_LENGTH
+from reviews.validators import validate_year, username_validator
 
-from .permissions import IsAdminOrStaff
+from .utils import send_confirmation_code_to_email
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -12,7 +13,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        exclude = ('id',)
+        fields = '__all__'
         lookup_field = 'slug'
 
 
@@ -21,7 +22,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        exclude = ('id',)
+        fields = '__all__'
         lookup_field = 'slug'
 
 
@@ -34,21 +35,23 @@ class TitleSafeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('__all__')
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
 
 
 class TitleSerializer(serializers.ModelSerializer):
     """Сериализатор произведений для POST, PATCH и DELETE-запросов."""
 
     genre = serializers.SlugRelatedField(
-        slug_field='slug',
         queryset=Genre.objects.all(),
+        slug_field='slug',
         many=True,
         allow_empty=False,
     )
     category = serializers.SlugRelatedField(
-        slug_field='slug',
         queryset=Category.objects.all(),
+        slug_field='slug',
     )
 
     class Meta:
@@ -64,11 +67,10 @@ class TitleSerializer(serializers.ModelSerializer):
 
     def readable_serializer(self, title):
         """Определяет сериализатор для чтения."""
-        serializer = TitleSafeSerializer(title)
-        return serializer.data
+        return TitleSafeSerializer(title).data
 
-    def validating_year(self, value):
-        return validate_year(value)
+    def validating_year(self, year):
+        return validate_year(year)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -82,19 +84,17 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date', )
+        fields = ('id', 'text', 'author', 'score', 'pub_date',)
 
     def validate(self, data):
         """Валидация, запрещающая создать существующий отзыв."""
         request = self.context['request']
-        title = self.context['view'].kwargs['title_id']
         if request.method == 'POST':
             if Review.objects.filter(
                     author=request.user,
-                    title=title
+                    title_id=self.context['view'].kwargs['title_id']
             ).exists():
                 raise serializers.ValidationError('Отзыв уже существует!')
-        print(data)
         return data
 
 
@@ -114,10 +114,45 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class SignUpSerializer(serializers.ModelSerializer):
     """Серилизатор для входа."""
+    username = serializers.CharField(
+        max_length=USERNAME_LENGTH,
+        validators=[
+            username_validator,
+        ],
+    )
+    email = serializers.EmailField(
+        max_length=EMAIL_LENGTH,
+    )
 
     class Meta:
         model = User
         fields = ('email', 'username')
+
+    def validate(self, data):
+        try:
+            User.objects.get_or_create(
+                username=data.get('username'),
+                email=data.get('email')
+            )
+        except IntegrityError:
+            raise serializers.ValidationError(
+                'Такой пользователь уже существует'
+            )
+        return data
+
+    def create(self, validated_data):
+        username = validated_data['username']
+        email = validated_data['email']
+
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email,
+            defaults={'role': USER}
+        )
+        user.save()
+
+        send_confirmation_code_to_email(user)
+        return user
 
 
 class AuthTokenSerializer(serializers.Serializer):
@@ -136,8 +171,6 @@ class AuthTokenSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор пользователя."""
-
-    permission_classes = (IsAdminOrStaff,)
 
     class Meta:
         model = User

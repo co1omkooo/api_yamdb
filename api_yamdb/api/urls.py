@@ -27,8 +27,12 @@ v1_router.register(
     basename='comments'
 )
 
+authurl = [
+    path('signup/', signup, name='user-registration'),
+    path('token/', get_token, name='user_get_token'),
+]
+
 urlpatterns = [
     path('v1/', include(v1_router.urls)),
-    path('v1/auth/signup/', signup, name='user-registration'),
-    path('v1/auth/token/', get_token, name='user_get_token'),
+    path('v1/auth/', include(authurl)),
 ]

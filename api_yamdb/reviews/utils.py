@@ -1,47 +1,34 @@
 from django.db import models
 
-from reviews.constants import MAX_LENGTH, CHAR_LIMIT
-from users.models import User
+from .constants import CHAR_OUTPUT_LIMIT, MAX_SLUG_LENGTH, MAX_NAME_LENGTH
+from .models import User
 
 
-class NameModel(models.Model):
-    """Родительский класс для моделей, с полем названия."""
+class NameSlugModel(models.Model):
+    """Абстрактная модель для категории и жанра."""
 
     name = models.CharField(
-        max_length=MAX_LENGTH,
-        verbose_name='Название',
-        help_text='Необходимо название категории'
+        max_length=MAX_NAME_LENGTH,
+        verbose_name='Наименование'
     )
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return self.name[:CHAR_LIMIT]
-
-
-class BaseTemplateClass(NameModel):
-    """Родительский класс для моделей Category и Genre."""
-
     slug = models.SlugField(
-        verbose_name='Уникальный индентификатор',
         unique=True,
-
+        max_length=MAX_SLUG_LENGTH,
+        verbose_name='Идентификатор'
     )
 
     class Meta:
         abstract = True
         ordering = ('name',)
+        verbose_name = 'Наименование'
+        verbose_name_plural = 'Наименования'
+
+    def __str__(self):
+        return self.name[:CHAR_OUTPUT_LIMIT]
 
 
-class BaseReviewCommentModel(models.Model):
-    """
-    Модель отзывов.
-
-    Модель, описывающая отзыв, автора и его дату.
-    Связи модели:
-        author - one to many.
-    """
+class TextAuthorDateModel(models.Model):
+    """Абстрактная модель для отцывов и комментариев"""
 
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
@@ -56,7 +43,7 @@ class BaseReviewCommentModel(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.text[:CHAR_LIMIT]
+        return self.text[:CHAR_OUTPUT_LIMIT]
