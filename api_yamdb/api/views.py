@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -15,6 +14,7 @@ from api.permissions import (
 )
 from reviews.models import Category, Genre, Title, Review, User
 from reviews.token import get_tokens_for_user
+import random
 
 from .serializers import (
     AuthTokenSerializer,
@@ -27,7 +27,6 @@ from .serializers import (
     TitleSerializer,
     UserSerializer
 )
-from .utils import send_confirmation_code_to_email
 
 
 class CategoryGenreViewSet(
@@ -48,33 +47,17 @@ class CategoryGenreViewSet(
 @permission_classes((AllowAny,))
 def signup(request):
     """Регистрация нового пользователя."""
-    username = request.data.get('username')
-    if User.objects.filter(username=username).exists():
-        user = get_object_or_404(User, username=username)
-        serializer = SignUpSerializer(
-            user, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        if serializer.validated_data['email'] != user.email:
-            return Response(
-                'Почта указана неверно!', status=status.HTTP_400_BAD_REQUEST
-            )
-        serializer.save(raise_exception=True)
-        send_confirmation_code_to_email(username)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    if serializer.validated_data['username'] != settings.NOT_ALLOWED_USERNAME:
-        serializer.save()
-        send_confirmation_code_to_email(username)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    user = serializer.save()
+
     return Response(
-        (
-            f'Использование имени пользователя '
-            f'{settings.NOT_ALLOWED_USERNAME} запрещено!'
-        ),
-        status=status.HTTP_400_BAD_REQUEST
+        {
+            'username': user.username,
+            'email': user.email
+        },
+        status=status.HTTP_200_OK
     )
 
 
@@ -84,11 +67,24 @@ def get_token(request):
     """Получение токена доступа."""
     serializer = AuthTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = get_object_or_404(User, username=request.data['username'])
-    confirmation_code = serializer.data.get('confirmation_code')
-    if confirmation_code == str(user.confirmation_code):
-        return Response(get_tokens_for_user(user), status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    user = get_object_or_404(User,
+                             username=serializer.validated_data['username'])
+    confirmation_code = serializer.validated_data.get('confirmation_code')
+
+    if confirmation_code != str(user.confirmation_code):
+        return Response(
+            {'confirmation_code': ['Invalid confirmation code.']},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user.confirmation_code = None
+    user.save()
+    return Response(get_tokens_for_user(user), status=status.HTTP_200_OK)
+
+
+def generate_confirmation_code():
+    """Генерирует новый одноразовый код."""
+    return random.randint(1000, 9999)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -100,7 +96,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).all()
+    ).order_by('name')
     permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter

@@ -28,7 +28,7 @@ class NameSlugModel(models.Model):
 
 
 class TextAuthorDateModel(models.Model):
-    """Абстрактная модель для отцывов и комментариев"""
+    """Абстрактная модель для отзывов и комментариев"""
 
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(

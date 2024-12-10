@@ -2,7 +2,10 @@ from django.db import IntegrityError
 from rest_framework import serializers
 
 from reviews.models import Category, Title, Genre, Review, Comment, User
-from reviews.constants import USERNAME_LENGTH, USER, EMAIL_LENGTH
+from reviews.constants import (CONFIRMATION_LENGTH,
+                               EMAIL_LENGTH,
+                               USERNAME_LENGTH,
+                               )
 from reviews.validators import validate_year, username_validator
 
 from .utils import send_confirmation_code_to_email
@@ -13,7 +16,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = '__all__'
+        fields = ('name', 'slug')
         lookup_field = 'slug'
 
 
@@ -22,7 +25,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ('name', 'slug')
         lookup_field = 'slug'
 
 
@@ -112,60 +115,63 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'pub_date',)
 
 
-class SignUpSerializer(serializers.ModelSerializer):
-    """Серилизатор для входа."""
+class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=USERNAME_LENGTH,
-        validators=[
-            username_validator,
-        ],
+        validators=(username_validator,)
     )
-    email = serializers.EmailField(
-        max_length=EMAIL_LENGTH,
-    )
-
-    class Meta:
-        model = User
-        fields = ('email', 'username')
+    email = serializers.EmailField(max_length=EMAIL_LENGTH)
 
     def validate(self, data):
-        try:
-            User.objects.get_or_create(
-                username=data.get('username'),
-                email=data.get('email')
-            )
-        except IntegrityError:
-            raise serializers.ValidationError(
-                'Такой пользователь уже существует'
-            )
+        """Проверяем данные (например, уникальность)."""
+        username = data.get('username')
+        email = data.get('email')
+
+        if User.objects.filter(username=username).exists():
+            user = User.objects.get(username=username)
+            if user.email != email:
+                raise serializers.ValidationError(
+                    'Пользователь с таким username уже'
+                    'cуществует, но email не совпадает.'
+                )
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            if user.username != username:
+                raise serializers.ValidationError(
+                    'Пользователь с таким email уже'
+                    'существует, но username не совпадает.'
+                )
+
         return data
 
     def create(self, validated_data):
-        username = validated_data['username']
-        email = validated_data['email']
-
-        user, created = User.objects.get_or_create(
-            username=username,
-            email=email,
-            defaults={'role': USER}
-        )
-        user.save()
-
-        send_confirmation_code_to_email(user)
-        return user
+        """Создание пользователя или возврат существующего."""
+        try:
+            user, created = User.objects.get_or_create(
+                username=validated_data['username'],
+                email=validated_data['email']
+            )
+            if created:
+                send_confirmation_code_to_email(user)
+            return user
+        except IntegrityError:
+            raise serializers.ValidationError(
+                'Ошибка создания пользователя. Попробуйте снова.'
+            )
 
 
 class AuthTokenSerializer(serializers.Serializer):
     """Сериализатор токена и имени пользователя."""
 
-    username = serializers.RegexField(
-        regex=r'^[\w.@+-]+$',
-        max_length=150,
+    username = serializers.CharField(
+        max_length=USERNAME_LENGTH,
+        validators=(username_validator,),
         required=True
     )
     confirmation_code = serializers.CharField(
         required=True,
-        max_length=16,
+        max_length=CONFIRMATION_LENGTH,
     )
 
 
@@ -178,3 +184,6 @@ class UserSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name',
             'last_name', 'bio', 'role'
         )
+
+        def validate_username(self, value):
+            return username_validator(value)

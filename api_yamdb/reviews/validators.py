@@ -15,12 +15,10 @@ def validate_year(year):
 
 
 def username_validator(user_name):
-    # Проверка на запрещенные слова
     forbidden_values = ('me',)
     if user_name.lower() in forbidden_values:
         raise ValidationError(f'Недопустимое имя пользователя: {user_name}')
 
-    # Проверка на запрещенные символы
     forbidden_chars = re.sub(r'^[\w.@+-]+\Z', '', user_name)
     if forbidden_chars:
         raise ValidationError(
