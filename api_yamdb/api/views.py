@@ -183,7 +183,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         detail=False,
         permission_classes=(IsAuthenticated,),
     )
-    def me(self, request):
+    def profile(self, request):
         if request.method == 'PATCH':
             serializer = UserSerializer(
                 request.user, data=request.data, partial=True
