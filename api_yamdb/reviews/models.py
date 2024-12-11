@@ -2,7 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from api_yamdb.settings import CONFIRMATION_LENGTH
+from django.conf import settings
 
 from .constants import (
     MAX_SCORE,
@@ -23,6 +23,7 @@ from .validators import validate_year, username_validator
 
 class User(AbstractUser):
     """Модель пользователя."""
+    confirmation_length = settings.CONFIRMATION_LENGTH
 
     role = models.CharField(
         max_length=max(len(role) for role, _ in ROLE_CHOICES),
@@ -51,7 +52,7 @@ class User(AbstractUser):
 
     confirmation_code = models.CharField(
         blank=True,
-        max_length=CONFIRMATION_LENGTH,
+        max_length=confirmation_length,
     )
 
     class Meta:
@@ -179,14 +180,14 @@ class Review(TextAuthorDateModel):
         verbose_name='Произведние'
     )
     score = models.IntegerField(
-        validators=[
+        validators=(
             MinValueValidator(
                 MIN_SCORE, f'Оценка не может быть меньше {MIN_SCORE}'
             ),
             MaxValueValidator(
                 MAX_SCORE, f'Оценка не может быть больше {MAX_SCORE}'
             )
-        ],
+        ),
         verbose_name='Оценка'
     )
 
@@ -195,7 +196,7 @@ class Review(TextAuthorDateModel):
         verbose_name_plural = 'Отзывы'
         constraints = (
             models.UniqueConstraint(
-                fields=['author', 'title'],
+                fields=('author', 'title'),
                 name='unique_author_title'
             ),
         )

@@ -33,8 +33,8 @@ class TitleAdmin(admin.ModelAdmin):
         },
     }
 
-    def genre_list(self, obj):
-        return ', '.join(genre.slug for genre in obj.genre.all())
+    def genre_list(self, title):
+        return ', '.join(genre.slug for genre in title.genre.all())
 
 
 @admin.register(Category)

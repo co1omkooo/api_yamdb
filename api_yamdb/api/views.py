@@ -3,8 +3,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.filters import TitleFilter
 from api.permissions import (
@@ -13,7 +15,6 @@ from api.permissions import (
     IsAdminUserOrReadOnly
 )
 from reviews.models import Category, Genre, Title, Review, User
-from reviews.token import get_tokens_for_user
 import random
 
 from .serializers import (
@@ -72,14 +73,15 @@ def get_token(request):
     confirmation_code = serializer.validated_data.get('confirmation_code')
 
     if confirmation_code != str(user.confirmation_code):
-        return Response(
-            {'confirmation_code': ['Invalid confirmation code.']},
-            status=status.HTTP_400_BAD_REQUEST
+        raise ValidationError(
+            {'confirmation_code': ['Invalid confirmation code.']}
         )
 
     user.confirmation_code = None
     user.save()
-    return Response(get_tokens_for_user(user), status=status.HTTP_200_OK)
+    refresh = RefreshToken.for_user(user)
+    tokens = {'token': str(refresh.access_token)}
+    return Response(tokens, status=status.HTTP_200_OK)
 
 
 def generate_confirmation_code():
