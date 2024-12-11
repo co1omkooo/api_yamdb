@@ -17,12 +17,6 @@ class IsAdminUserOrReadOnly(permissions.BasePermission):
             or (IsAdmin.has_permission(self, request, view))
         )
 
-    # def has_object_permission(self, request, view, obj):
-    #     return (
-    #         request.method in permissions.SAFE_METHODS
-    #         or (IsAdmin.has_permission(self, request, view))
-    #     )
-
 
 class IsAdminModeratorAuthorOrReadOnly(permissions.BasePermission):
     """Разрешение для автора, модератора, администратора или только чтение."""

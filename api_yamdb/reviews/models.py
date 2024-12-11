@@ -17,7 +17,6 @@ from .constants import (
     CHAR_OUTPUT_LIMIT,
     MAX_SLUG_LENGTH
 )
-# from .utils import NameSlugModel, TextAuthorDateModel
 from .validators import validate_year, username_validator
 
 
@@ -47,24 +46,20 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=USERNAME_LENGTH,
         unique=True,
-        validators=[username_validator]
+        validators=[username_validator],
+        verbose_name='Имя пользователя'
     )
 
     confirmation_code = models.CharField(
         blank=True,
         max_length=confirmation_length,
+        verbose_name='Код подтвержедния'
     )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
-        # constraints = (
-        #     models.UniqueConstraint(
-        #         fields=('username', 'email'),
-        #         name='unique_username_email'
-        #     ),
-        # )
 
     def __str__(self):
         return self.username
