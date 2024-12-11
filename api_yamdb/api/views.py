@@ -1,5 +1,6 @@
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes
@@ -169,6 +170,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class UsersViewSet(viewsets.ModelViewSet):
     """Управление данными пользователя."""
+    endpoint_user_info = settings.ENDPOINT_USER_INFO
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -181,6 +183,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     @action(
         methods=('get', 'patch',),
         detail=False,
+        url_path=endpoint_user_info,
         permission_classes=(IsAuthenticated,),
     )
     def profile(self, request):

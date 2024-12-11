@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
@@ -10,8 +9,6 @@ from .views import (
     CommentViewSet,
     ReviewViewSet,
 )
-
-endpoint_user_info = settings.ENDPOINT_USER_INFO
 
 v1_router = DefaultRouter()
 v1_router.register('titles', TitleViewSet, basename='title')
@@ -37,6 +34,4 @@ authurl = [
 urlpatterns = [
     path('v1/', include(v1_router.urls)),
     path('v1/auth/', include(authurl)),
-    path(f'users/{endpoint_user_info}/',
-         UsersViewSet.as_view({'get': endpoint_user_info})),
 ]
