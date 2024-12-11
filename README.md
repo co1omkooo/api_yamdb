@@ -237,9 +237,15 @@ PATCH /api/v1/users/{username}/ - Изменение данных пользов
 ```
 ## Разработчики
 # Team Lead - Демид Шевченко:
-[[@c](https://github.com/co1omkooo)](url)
+```
+https://github.com/co1omkooo
+```
 # Developers:
 Вадим Петренко 
-https://github.com/co1omkooo/api_yamdb/commits?author=Atikus17[*клик*](url)
+```
+https://github.com/Atikus17
+```
 Артем Болдырев
-https://github.com/Artymonae[*клик*](url)
+```
+https://github.com/Artymonae
+```
