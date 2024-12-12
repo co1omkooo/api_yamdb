@@ -170,8 +170,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class UsersViewSet(viewsets.ModelViewSet):
     """Управление данными пользователя."""
-    endpoint_user_info = settings.ENDPOINT_USER_INFO
 
+    endpoint_user_info = settings.ENDPOINT_USER_INFO
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)

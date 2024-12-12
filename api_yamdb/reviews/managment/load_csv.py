@@ -3,7 +3,7 @@ from pathlib import Path
 
 from django.core.management.base import BaseCommand
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import User
+from reviews.models import User
 
 
 class Command(BaseCommand):

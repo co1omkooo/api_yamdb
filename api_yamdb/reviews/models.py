@@ -22,6 +22,7 @@ from .validators import validate_year, username_validator
 
 class User(AbstractUser):
     """Модель пользователя."""
+
     confirmation_length = settings.CONFIRMATION_LENGTH
 
     role = models.CharField(
