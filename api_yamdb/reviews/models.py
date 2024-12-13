@@ -22,6 +22,7 @@ from .validators import validate_year, username_validator
 
 class User(AbstractUser):
     """Модель пользователя."""
+
     confirmation_length = settings.CONFIRMATION_LENGTH
 
     role = models.CharField(
@@ -38,7 +39,7 @@ class User(AbstractUser):
 
     email = models.EmailField(
         max_length=EMAIL_LENGTH,
-        blank=False,
+        # blank=False,
         unique=True,
         verbose_name='Электронная почта'
     )
@@ -90,8 +91,6 @@ class NameSlugModel(models.Model):
     class Meta:
         abstract = True
         ordering = ('name',)
-        verbose_name = 'Наименование'
-        verbose_name_plural = 'Наименования'
 
     def __str__(self):
         return self.name[:CHAR_OUTPUT_LIMIT]
@@ -117,11 +116,11 @@ class Title(models.Model):
     """Модель произведений."""
     name = models.CharField(
         max_length=MAX_NAME_LENGTH,
-        verbose_name='Наименование произведения'
+        verbose_name='Наименование'
     )
 
     description = models.TextField(
-        verbose_name='Описание произведения',
+        verbose_name='Описание',
         blank=True,
     )
     year = models.SmallIntegerField(
@@ -131,13 +130,13 @@ class Title(models.Model):
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
-        verbose_name='Категория произведения',
+        verbose_name='Категория',
         related_name='titles',
     )
     genre = models.ManyToManyField(
         Genre,
         related_name='titles',
-        verbose_name='Жанр произведения',
+        verbose_name='Жанр',
     )
 
     class Meta:
@@ -149,7 +148,7 @@ class Title(models.Model):
 class TextAuthorDateModel(models.Model):
     """Абстрактная модель для отцывов и комментариев"""
 
-    text = models.TextField(verbose_name='Текст отзыва')
+    text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -174,14 +173,10 @@ class Review(TextAuthorDateModel):
         db_index=True,
         verbose_name='Произведние'
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         validators=(
-            MinValueValidator(
-                MIN_SCORE, f'Оценка не может быть меньше {MIN_SCORE}'
-            ),
-            MaxValueValidator(
-                MAX_SCORE, f'Оценка не может быть больше {MAX_SCORE}'
-            )
+            MinValueValidator(MIN_SCORE),
+            MaxValueValidator(MAX_SCORE)
         ),
         verbose_name='Оценка'
     )

@@ -2,6 +2,7 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.conf import settings
 
 
 def validate_year(year):
@@ -15,7 +16,7 @@ def validate_year(year):
 
 
 def username_validator(user_name):
-    forbidden_values = ('me',)
+    forbidden_values = settings.ENDPOINT_USER_INFO
     if user_name.lower() in forbidden_values:
         raise ValidationError(f'Недопустимое имя пользователя: {user_name}')
 

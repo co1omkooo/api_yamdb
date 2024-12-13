@@ -1,6 +1,8 @@
+# import random
+
+from django.conf import settings
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets, mixins
 from rest_framework.decorators import action, api_view, permission_classes
@@ -16,7 +18,6 @@ from api.permissions import (
     IsAdminUserOrReadOnly
 )
 from reviews.models import Category, Genre, Title, Review, User
-import random
 
 from .serializers import (
     AuthTokenSerializer,
@@ -31,7 +32,7 @@ from .serializers import (
 )
 
 
-class CategoryGenreViewSet(
+class MixinSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,
@@ -51,7 +52,6 @@ def signup(request):
     """Регистрация нового пользователя."""
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-
     user = serializer.save()
 
     return Response(
@@ -73,21 +73,20 @@ def get_token(request):
                              username=serializer.validated_data['username'])
     confirmation_code = serializer.validated_data.get('confirmation_code')
 
-    if confirmation_code != str(user.confirmation_code):
+    if confirmation_code != user.confirmation_code:
         raise ValidationError(
             {'confirmation_code': ['Invalid confirmation code.']}
         )
 
-    user.confirmation_code = None
-    user.save()
-    refresh = RefreshToken.for_user(user)
-    tokens = {'token': str(refresh.access_token)}
-    return Response(tokens, status=status.HTTP_200_OK)
+    return Response(
+        {'token': str(RefreshToken.for_user(user).access_token)},
+        status=status.HTTP_200_OK
+    )
 
 
-def generate_confirmation_code():
-    """Генерирует новый одноразовый код."""
-    return random.randint(1000, 9999)
+# def generate_confirmation_code():
+#     """Генерирует новый одноразовый код."""
+#     return random.randint(1000, 9999)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -111,14 +110,14 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializer
 
 
-class CategoryViewSet(CategoryGenreViewSet):
+class CategoryViewSet(MixinSet):
     """Вьюсет для отображения категории, ее удаления и чтения."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(CategoryGenreViewSet):
+class GenreViewSet(MixinSet):
     """Вьюсет для создания, удаления жанра и отображения списка."""
 
     queryset = Genre.objects.all()
@@ -170,8 +169,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class UsersViewSet(viewsets.ModelViewSet):
     """Управление данными пользователя."""
-    endpoint_user_info = settings.ENDPOINT_USER_INFO
 
+    # endpoint_user_info = settings.ENDPOINT_USER_INFO
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
@@ -183,7 +182,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     @action(
         methods=('get', 'patch',),
         detail=False,
-        url_path=endpoint_user_info,
+        url_path=settings.ENDPOINT_USER_INFO,
         permission_classes=(IsAuthenticated,),
     )
     def profile(self, request):
