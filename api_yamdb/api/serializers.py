@@ -122,33 +122,18 @@ class SignUpSerializer(serializers.Serializer):
     )
     email = serializers.EmailField(max_length=EMAIL_LENGTH)
 
-    def validate(self, data):
-        """Проверяем данные (например, уникальность)."""
-        # if User.objects.filter(username=username).exists():
-        #     user = User.objects.get(username=username)
-        #     if user.email != email:
-        #         raise serializers.ValidationError(
-        #             'Пользователь с таким username уже'
-        #             'cуществует, но email не совпадает.'
-        #         )
-
-        # if User.objects.filter(email=email).exists():
-        #     user = User.objects.get(email=email)
-        #     if user.username != username:
-        #         raise serializers.ValidationError(
-        #             'Пользователь с таким email уже'
-        #             'существует, но username не совпадает.'
-        #         )
-        try:
-            User.objects.get_or_create(
-                username=data.get('username'),
-                email=data.get('email')
-            )
-        except IntegrityError:
-            raise serializers.ValidationError(
-                'Такой пользователь уже существует'
-            )
-        return data
+    # def validate(self, data):
+    #     """Проверяем данные (например, уникальность)."""
+    #     try:
+    #         User.objects.get_or_create(
+    #             username=data.get('username'),
+    #             email=data.get('email')
+    #         )
+    #     except IntegrityError:
+    #         raise serializers.ValidationError(
+    #             'Такой пользователь уже существует'
+    #         )
+    #     return data
 
     def create(self, validated_data):
         """Создание пользователя или возврат существующего."""
@@ -157,12 +142,14 @@ class SignUpSerializer(serializers.Serializer):
                 username=validated_data['username'],
                 email=validated_data['email']
             )
-            if created:
-                send_confirmation_code_to_email(user)
+            # if created:
+            send_confirmation_code_to_email(user)
             return user
         except IntegrityError:
             raise serializers.ValidationError(
-                'Ошибка создания пользователя. Попробуйте снова.'
+                {'{username}': 'Ошибка username при создания пользователя.',
+                 '{email}': 'Ошибка email при создания пользователя.'
+                 }
             )
 
 
