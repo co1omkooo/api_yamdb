@@ -36,6 +36,11 @@ class TitleSafeSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True)
     rating = serializers.IntegerField(read_only=True)
 
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    year = serializers.IntegerField(read_only=True)
+    description = serializers.CharField(read_only=True)
+
     class Meta:
         model = Title
         fields = (
@@ -72,7 +77,7 @@ class TitleSerializer(serializers.ModelSerializer):
         """Определяет сериализатор для чтения."""
         return TitleSafeSerializer(title).data
 
-    def validating_year(self, year):
+    def validate_year(self, year):
         return validate_year(year)
 
 
@@ -92,12 +97,15 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Валидация, запрещающая создать существующий отзыв."""
         request = self.context['request']
-        if request.method == 'POST':
-            if Review.objects.filter(
-                author=request.user,
-                title_id=self.context['view'].kwargs['title_id']
-            ).exists():
-                raise serializers.ValidationError('Отзыв уже существует!')
+        if request.method != 'POST':
+            return data
+
+        if Review.objects.filter(
+            author=request.user,
+            title_id=self.context['view'].kwargs['title_id']
+        ).exists():
+            raise serializers.ValidationError('Отзыв уже существует!')
+
         return data
 
 
