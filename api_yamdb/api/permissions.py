@@ -8,13 +8,13 @@ class IsAdmin(permissions.BasePermission):
         return request.user.is_authenticated and request.user.is_admin()
 
 
-class IsAdminUserOrReadOnly(permissions.BasePermission):
+class IsAdminUserOrReadOnly(IsAdmin):
     """Разрешение только для чтения, либо полный доступ для администратора."""
 
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
-            or (IsAdmin.has_permission(self, request, view))
+            or (super().has_permission(request, view))
         )
 
 

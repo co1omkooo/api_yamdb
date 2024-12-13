@@ -1,13 +1,13 @@
 from django.db import IntegrityError
 from rest_framework import serializers
 
+from reviews.constants import (
+    CONFIRMATION_LENGTH,
+    EMAIL_LENGTH,
+    USERNAME_LENGTH,
+)
 from reviews.models import Category, Title, Genre, Review, Comment, User
-from reviews.constants import (CONFIRMATION_LENGTH,
-                               EMAIL_LENGTH,
-                               USERNAME_LENGTH,
-                               )
 from reviews.validators import validate_year, username_validator
-
 from .utils import send_confirmation_code_to_email
 
 
@@ -33,7 +33,7 @@ class TitleSafeSerializer(serializers.ModelSerializer):
     """Сериализатор для безопасных запросов к произведениям."""
 
     category = CategorySerializer(read_only=True)
-    genre = GenreSerializer(read_only=True, many=True)
+    genre = GenreSerializer(many=True)
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -124,25 +124,30 @@ class SignUpSerializer(serializers.Serializer):
 
     def validate(self, data):
         """Проверяем данные (например, уникальность)."""
-        username = data.get('username')
-        email = data.get('email')
+        # if User.objects.filter(username=username).exists():
+        #     user = User.objects.get(username=username)
+        #     if user.email != email:
+        #         raise serializers.ValidationError(
+        #             'Пользователь с таким username уже'
+        #             'cуществует, но email не совпадает.'
+        #         )
 
-        if User.objects.filter(username=username).exists():
-            user = User.objects.get(username=username)
-            if user.email != email:
-                raise serializers.ValidationError(
-                    'Пользователь с таким username уже'
-                    'cуществует, но email не совпадает.'
-                )
-
-        if User.objects.filter(email=email).exists():
-            user = User.objects.get(email=email)
-            if user.username != username:
-                raise serializers.ValidationError(
-                    'Пользователь с таким email уже'
-                    'существует, но username не совпадает.'
-                )
-
+        # if User.objects.filter(email=email).exists():
+        #     user = User.objects.get(email=email)
+        #     if user.username != username:
+        #         raise serializers.ValidationError(
+        #             'Пользователь с таким email уже'
+        #             'существует, но username не совпадает.'
+        #         )
+        try:
+            User.objects.get_or_create(
+                username=data.get('username'),
+                email=data.get('email')
+            )
+        except IntegrityError:
+            raise serializers.ValidationError(
+                'Такой пользователь уже существует'
+            )
         return data
 
     def create(self, validated_data):
