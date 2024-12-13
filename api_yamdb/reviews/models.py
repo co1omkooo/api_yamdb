@@ -47,7 +47,7 @@ class User(AbstractUser):
         max_length=USERNAME_LENGTH,
         unique=True,
         validators=[username_validator],
-        verbose_name='Имя пользователя'
+        verbose_name='Никнейм'
     )
 
     confirmation_code = models.CharField(
@@ -151,7 +151,8 @@ class TextAuthorDateModel(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор'
+        verbose_name='Автор',
+        related_name='authors'
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,

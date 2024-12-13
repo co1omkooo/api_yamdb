@@ -36,16 +36,12 @@ class TitleSafeSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     rating = serializers.IntegerField(read_only=True)
 
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(read_only=True)
-    year = serializers.IntegerField(read_only=True)
-    description = serializers.CharField(read_only=True)
-
     class Meta:
         model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
+        read_only_fields = ('id', 'name', 'year', 'description')
 
 
 class TitleSerializer(serializers.ModelSerializer):
