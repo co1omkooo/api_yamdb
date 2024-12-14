@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -14,6 +13,7 @@ from .constants import (
     MAX_NAME_LENGTH,
     EMAIL_LENGTH,
     CHAR_OUTPUT_LIMIT,
+    CONFIRMATION_LENGTH,
     MAX_SLUG_LENGTH
 )
 from .validators import validate_year, username_validator
@@ -21,8 +21,6 @@ from .validators import validate_year, username_validator
 
 class User(AbstractUser):
     """Модель пользователя."""
-
-    confirmation_length = settings.CONFIRMATION_LENGTH
 
     role = models.CharField(
         max_length=max(len(role) for role, _ in ROLE_CHOICES),
@@ -38,7 +36,6 @@ class User(AbstractUser):
 
     email = models.EmailField(
         max_length=EMAIL_LENGTH,
-        # blank=False,
         unique=True,
         verbose_name='Электронная почта'
     )
@@ -52,7 +49,7 @@ class User(AbstractUser):
 
     confirmation_code = models.CharField(
         blank=True,
-        max_length=confirmation_length,
+        max_length=CONFIRMATION_LENGTH,
         verbose_name='Код подтвержедния'
     )
 
@@ -130,11 +127,9 @@ class Title(models.Model):
         Category,
         on_delete=models.CASCADE,
         verbose_name='Категория',
-        related_name='titles',
     )
     genre = models.ManyToManyField(
         Genre,
-        related_name='titles',
         verbose_name='Жанр',
     )
 
@@ -142,17 +137,17 @@ class Title(models.Model):
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
         ordering = ('-year', 'name')
+        default_related_name = 'titles'
 
 
 class TextAuthorDateModel(models.Model):
-    """Абстрактная модель для отцывов и комментариев"""
+    """Абстрактная модель для отзывов и комментариев"""
 
     text = models.TextField(verbose_name='Текст')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        related_name='authors'
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -162,6 +157,7 @@ class TextAuthorDateModel(models.Model):
     class Meta:
         abstract = True
         ordering = ('-pub_date',)
+        default_related_name = '%(class)ss'
 
 
 class Review(TextAuthorDateModel):
@@ -190,7 +186,6 @@ class Review(TextAuthorDateModel):
                 name='unique_author_title'
             ),
         )
-        default_related_name = 'reviews'
 
 
 class Comment(TextAuthorDateModel):
@@ -205,4 +200,3 @@ class Comment(TextAuthorDateModel):
     class Meta(TextAuthorDateModel.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        default_related_name = 'comments'

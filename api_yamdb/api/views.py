@@ -31,6 +31,8 @@ from .serializers import (
     UserSerializer
 )
 
+from .utils import send_confirmation_code_to_email
+
 
 class MixinSet(
     mixins.CreateModelMixin,
@@ -53,6 +55,7 @@ def signup(request):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = serializer.save()
+    send_confirmation_code_to_email(user)
 
     return Response(
         {
@@ -98,7 +101,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
-    ).order_by('name')
+    ).order_by(*Title._meta.ordering)
     permission_classes = (IsAdminUserOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -170,7 +173,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 class UsersViewSet(viewsets.ModelViewSet):
     """Управление данными пользователя."""
 
-    # endpoint_user_info = settings.ENDPOINT_USER_INFO
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)

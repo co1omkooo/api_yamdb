@@ -8,7 +8,6 @@ from reviews.constants import (
 )
 from reviews.models import Category, Title, Genre, Review, Comment, User
 from reviews.validators import validate_year, username_validator
-from .utils import send_confirmation_code_to_email
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -147,7 +146,6 @@ class SignUpSerializer(serializers.Serializer):
                 email=validated_data['email']
             )
             # if created:
-            send_confirmation_code_to_email(user)
             return user
         except IntegrityError:
             raise serializers.ValidationError(
