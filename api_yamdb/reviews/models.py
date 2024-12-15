@@ -103,6 +103,7 @@ class Genre(NameSlugModel):
 
 class Title(models.Model):
     """Модель произведений."""
+
     name = models.CharField(
         max_length=MAX_NAME_LENGTH,
         verbose_name='Наименование'

@@ -1,5 +1,7 @@
 import csv
+
 from django.core.management.base import BaseCommand
+
 from reviews.models import Category, Genre, Title, Review, Comment, User
 
 
@@ -66,7 +68,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Произведения загружены!"))
 
     def load_genre_titles(self):
-        with open('static/data/genre_title.csv', 'r', encoding='utf-8') as file:
+        with open(
+            'static/data/genre_title.csv', 'r', encoding='utf-8'
+        ) as file:
             reader = csv.DictReader(file)
             for row in reader:
                 try:
@@ -74,10 +78,20 @@ class Command(BaseCommand):
                     genre = Genre.objects.get(id=row['genre_id'])
                     title.genre.add(genre)  # Добавляем жанр через ManyToMany
                 except Title.DoesNotExist:
-                    self.stdout.write(self.style.ERROR(f"Произведение с id {row['title_id']} не найдено."))
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Произведение с id {row['title_id']} не найдено."
+                        )
+                    )
                 except Genre.DoesNotExist:
-                    self.stdout.write(self.style.ERROR(f"Жанр с id {row['genre_id']} не найден."))
-        self.stdout.write(self.style.SUCCESS("Связи 'Жанры - Произведения' загружены!"))
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Жанр с id {row['genre_id']} не найден."
+                        )
+                    )
+        self.stdout.write(
+            self.style.SUCCESS("Связи 'Жанры - Произведения' загружены!")
+        )
 
     def load_reviews(self):
         with open('static/data/review.csv', 'r', encoding='utf-8') as file:
