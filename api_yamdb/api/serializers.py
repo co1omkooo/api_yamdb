@@ -40,7 +40,7 @@ class TitleSafeSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-        read_only_fields = ('id', 'name', 'year', 'description')
+        read_only_fields = fields
 
 
 class TitleSerializer(serializers.ModelSerializer):
