@@ -63,9 +63,9 @@ def signup(request):
             email=email
         )
     except IntegrityError as e:
-        if "username" in str(e).lower():
+        if 'username' in str(e).lower():
             raise ValidationError({'username': 'Ошибка: username существует.'})
-        elif "email" in str(e).lower():
+        elif 'email' in str(e).lower():
             raise ValidationError({'email': 'Ошибка: email существует.'})
 
     send_confirmation_code_to_email(user)
