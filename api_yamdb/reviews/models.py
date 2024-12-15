@@ -13,7 +13,6 @@ from .constants import (
     MAX_NAME_LENGTH,
     EMAIL_LENGTH,
     CHAR_OUTPUT_LIMIT,
-    CONFIRMATION_LENGTH,
     MAX_SLUG_LENGTH
 )
 from .validators import validate_year, username_validator
