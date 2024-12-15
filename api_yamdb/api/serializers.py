@@ -1,4 +1,3 @@
-from django.db import IntegrityError
 from rest_framework import serializers
 
 from reviews.constants import (
@@ -121,24 +120,13 @@ class CommentSerializer(serializers.ModelSerializer):
 class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=USERNAME_LENGTH,
+        required=True,
         validators=(username_validator,)
     )
-    email = serializers.EmailField(max_length=EMAIL_LENGTH)
-
-    def create(self, validated_data):
-        """Создание пользователя или возврат существующего."""
-        try:
-            user, created = User.objects.get_or_create(
-                username=validated_data['username'],
-                email=validated_data['email']
-            )
-            return user
-        except IntegrityError:
-            raise serializers.ValidationError(
-                {'{username}': 'Ошибка username при создания пользователя.',
-                 '{email}': 'Ошибка email при создания пользователя.'
-                 }
-            )
+    email = serializers.EmailField(
+        max_length=EMAIL_LENGTH,
+        required=True
+    )
 
 
 class AuthTokenSerializer(serializers.Serializer):

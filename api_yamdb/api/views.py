@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
+from django.db import IntegrityError
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -53,7 +54,20 @@ def signup(request):
     """Регистрация нового пользователя."""
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = serializer.save()
+    validated_data = serializer.validated_data
+    username = validated_data['username']
+    email = validated_data['email']
+    try:
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email
+        )
+    except IntegrityError as e:
+        if "username" in str(e).lower():
+            raise ValidationError({'username': 'Ошибка: username существует.'})
+        elif "email" in str(e).lower():
+            raise ValidationError({'email': 'Ошибка: email существует.'})
+
     send_confirmation_code_to_email(user)
 
     return Response(
