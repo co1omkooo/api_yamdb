@@ -1,6 +1,5 @@
-# import random
-
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -76,7 +75,7 @@ def get_token(request):
                              username=serializer.validated_data['username'])
     confirmation_code = serializer.validated_data.get('confirmation_code')
 
-    if confirmation_code != user.confirmation_code:
+    if not default_token_generator.check_token(user, confirmation_code):
         raise ValidationError(
             {'confirmation_code': ['Invalid confirmation code.']}
         )
@@ -85,11 +84,6 @@ def get_token(request):
         {'token': str(RefreshToken.for_user(user).access_token)},
         status=status.HTTP_200_OK
     )
-
-
-# def generate_confirmation_code():
-#     """Генерирует новый одноразовый код."""
-#     return random.randint(1000, 9999)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
