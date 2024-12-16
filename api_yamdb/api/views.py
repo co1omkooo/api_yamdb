@@ -58,15 +58,16 @@ def signup(request):
     username = validated_data['username']
     email = validated_data['email']
     try:
-        user, created = User.objects.get_or_create(
+        user, _ = User.objects.get_or_create(
             username=username,
             email=email
         )
-    except IntegrityError as e:
-        if 'username' in str(e).lower():
-            raise ValidationError({'username': 'Ошибка: username существует.'})
-        elif 'email' in str(e).lower():
-            raise ValidationError({'email': 'Ошибка: email существует.'})
+    except IntegrityError as error:
+        if 'username' in str(error).lower() or 'email' in str(error).lower():
+            raise ValidationError({
+                'username': 'Ошибка: username существует.',
+                'email': 'Ошибка: email существует.'
+            })
 
     send_confirmation_code_to_email(user)
 
