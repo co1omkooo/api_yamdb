@@ -62,14 +62,13 @@ def signup(request):
             username=username,
             email=email
         )
-    except IntegrityError as error:
-        if 'username' in str(error).lower() or 'email' in str(error).lower():
-            raise ValidationError({
-                'username': 'Ошибка: username существует.',
-                'email': 'Ошибка: email существует.'
-            })
-
-    send_confirmation_code_to_email(user)
+        send_confirmation_code_to_email(user)
+    except IntegrityError:
+        raise ValidationError(
+            {'username': 'Username уже занят.'}
+            if User.objects.filter(username=username).exists()
+            else {'email': 'Email уже занят.'}
+        )
 
     return Response(
         {
